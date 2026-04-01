@@ -1,5 +1,8 @@
 node_modules/
 
+# Payload local disk uploads (source assets live under public/images/)
+media/
+
 # Secrets — never commit
 .env
 .env.local

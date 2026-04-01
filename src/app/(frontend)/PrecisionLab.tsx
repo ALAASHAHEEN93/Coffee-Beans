@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useMemo, useState, useEffect } from 'react'
+import type { Home } from '@/payload-types'
+import React, { useEffect, useState } from 'react'
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const TAU = Math.PI * 2
@@ -35,7 +36,13 @@ const PRESETS: Record<BrewMode, Record<AxisKey, number>> = {
   },
 }
 
-export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
+type Props = {
+  brewMode: BrewMode
+  cms: Home
+  mapScanTemplate: (template: string, brewMode: BrewMode) => string
+}
+
+export default function PrecisionLab({ brewMode, cms, mapScanTemplate }: Props) {
   const [profile, setProfile] = useState<Record<AxisKey, number>>({
     acidity: 52,
     body: 39,
@@ -81,25 +88,35 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
     updateAxis(AXES[axisIndex], nextValue)
   }
 
+  const axisLabels = [
+    cms.axisAcidity,
+    cms.axisBody,
+    cms.axisRoast,
+    cms.axisSweetness,
+    cms.axisComplexity,
+  ]
+
+  const matrixTags =
+    brewMode === 'espresso' ? cms.matrixTagsEspresso ?? [] : cms.matrixTagsFilter ?? []
+
   return (
-    <section className="precisionSection" id="variable-lab">
-      <p className="phase">PRECISION LAB</p>
-      <h2>Molecular Customization</h2>
-      <p className="precisionIntro">
-        Tinker with the chemical variables. As an expert, you control the extraction curves for the
-        filter profile.
-      </p>
+    <section className="precisionSection" id="precision-lab">
+      <p className="phase">{cms.precisionPhase}</p>
+      <h2>{cms.precisionTitle}</h2>
+      <p className="precisionIntro">{cms.precisionIntro}</p>
 
       <div className="precisionPanel">
         <div className="precisionLeft">
           <div className="precisionHead">
-            <h3>EXTRACTION LAB</h3>
-            <span>STATUS: ACTIVE // {brewMode.toUpperCase()}</span>
+            <h3>{cms.precisionPanelTitle}</h3>
+            <span>
+              {cms.precisionStatusPrefix} {brewMode.toUpperCase()}
+            </span>
           </div>
 
           <label className="metric">
             <div>
-              <span>ROAST</span>
+              <span>{cms.axisRoast}</span>
               <strong>{profile.roast}%</strong>
             </div>
             <input
@@ -108,13 +125,13 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
               max={95}
               value={profile.roast}
               onChange={(e) => updateAxis('roast', Number(e.target.value))}
-              aria-label="Roast level"
+              aria-label={cms.axisRoast ?? 'Roast'}
             />
           </label>
 
           <div className="metric">
             <div>
-              <span>ACIDITY</span>
+              <span>{cms.axisAcidity}</span>
               <strong>{profile.acidity}%</strong>
             </div>
             <progress max={100} value={profile.acidity} />
@@ -122,7 +139,7 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
 
           <div className="metric">
             <div>
-              <span>BODY</span>
+              <span>{cms.axisBody}</span>
               <strong>{profile.body}%</strong>
             </div>
             <progress max={100} value={profile.body} />
@@ -130,7 +147,7 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
 
           <div className="metric">
             <div>
-              <span>SWEETNESS</span>
+              <span>{cms.axisSweetness}</span>
               <strong>{profile.sweetness}%</strong>
             </div>
             <progress max={100} value={profile.sweetness} />
@@ -138,7 +155,7 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
 
           <div className="metric">
             <div>
-              <span>COMPLEXITY</span>
+              <span>{cms.axisComplexity}</span>
               <strong>{profile.complexity}%</strong>
             </div>
             <progress max={100} value={profile.complexity} />
@@ -146,40 +163,30 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
 
           <div className="matrixBlock">
             <p>
-              <span className="dot" /> EXTRACTION MATRIX:
+              <span className="dot" /> {cms.matrixHeading}
             </p>
             <div className="matrixTags">
-              {brewMode === 'espresso' ? (
-                <>
-                  <span>MAILLARD RICHNESS</span>
-                  <span>CARAMELIZED FINISH</span>
-                  <span>HIGH VISCOSITY</span>
-                </>
-              ) : (
-                <>
-                  <span>CITRIC BRIGHTNESS</span>
-                  <span>CARAMELIZED FINISH</span>
-                  <span>VOLATILE FLAVORS</span>
-                </>
-              )}
+              {matrixTags.map((t) => (
+                <span key={t.id ?? t.text}>{t.text}</span>
+              ))}
             </div>
             <button type="button" className="synthesizeBtn">
-              SYNTHESIZE FLAVOR PROFILE
+              {cms.synthesizeButton}
             </button>
           </div>
         </div>
 
         <div className={`precisionRight ${brewMode === 'espresso' ? 'espressoMode' : 'filterMode'}`}>
           <div className="scanStats">
-            <span>SCAN_UID: X-992</span>
-            <span>BEAM_TEMP: {brewMode === 'espresso' ? 165 : 99}.0°C</span>
-            <span>WATER_V: {brewMode === 'espresso' ? '92.4' : '99'}%</span>
+            {(cms.scanStats ?? []).map((row, i) => (
+              <span key={row.id ?? i}>{mapScanTemplate(row.template, brewMode)}</span>
+            ))}
           </div>
           <svg
             className="radarChart"
             id="precision-radar"
             viewBox="0 0 340 340"
-            aria-label="Live flavor radar chart"
+            aria-label={cms.radarAriaLabel ?? ''}
             onPointerMove={(e) => {
               if (draggingAxis !== null) handleFromPointer(e.clientX, e.clientY, draggingAxis)
             }}
@@ -218,33 +225,33 @@ export default function PrecisionLab({ brewMode }: { brewMode: BrewMode }) {
               )
             })}
             <text x={CENTER} y="18" textAnchor="middle">
-              Acidity
+              {axisLabels[0]}
             </text>
             <text x="266" y="130" textAnchor="middle">
-              Body
+              {axisLabels[1]}
             </text>
             <text x="224" y="284" textAnchor="middle">
-              Roast
+              {axisLabels[2]}
             </text>
             <text x="76" y="284" textAnchor="middle">
-              Sweetness
+              {axisLabels[3]}
             </text>
             <text x="34" y="130" textAnchor="middle">
-              Complexity
+              {axisLabels[4]}
             </text>
           </svg>
           <label className="targetControl">
-            <span>Set Roast Target</span>
+            <span>{cms.roastSliderLabel}</span>
             <input
               type="range"
               min={10}
               max={95}
               value={profile.roast}
               onChange={(e) => updateAxis('roast', Number(e.target.value))}
-              aria-label="Set roast target"
+              aria-label={cms.roastSliderLabel ?? ''}
             />
           </label>
-          <p>Flavor profile updates in real-time as roast level changes.</p>
+          <p>{cms.flavorNote}</p>
         </div>
       </div>
     </section>

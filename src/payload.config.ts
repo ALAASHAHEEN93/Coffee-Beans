@@ -8,6 +8,8 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Coffee } from './collections/Coffee'
+import { Home } from './globals/Home'
+import { payloadPlugins } from './plugins'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,15 +22,23 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Coffee],
+  globals: [Home],
+  localization: {
+    locales: [
+      { label: 'Deutsch', code: 'de' },
+      { label: 'English', code: 'en' },
+    ],
+    defaultLocale: 'de',
+    fallback: true,
+  },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    // Prefer DATABASE_URL, but allow MONGODB_URI for local/env compatibility.
     url: process.env.DATABASE_URL || process.env.MONGODB_URI || '',
   }),
   sharp,
-  plugins: [],
+  plugins: payloadPlugins,
 })

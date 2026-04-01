@@ -88,10 +88,14 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('de' | 'en') | ('de' | 'en')[];
+  globals: {
+    home: Home;
+  };
+  globalsSelect: {
+    home: HomeSelect<false> | HomeSelect<true>;
+  };
+  locale: 'de' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -145,12 +149,35 @@ export interface User {
   collection: 'users';
 }
 /**
+ * All images for the site. Files are stored in Vercel Blob in production.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: string;
+  /**
+   * Short description for screen readers and SEO (required).
+   */
   alt: string;
+  /**
+   * Optional caption shown with the image where the layout supports it.
+   */
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -282,6 +309,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -345,6 +373,550 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Marketing home page (CoffeeLab). Default locale is German (de). Use the locale switcher in the admin bar to edit **de** vs **en** — fields look empty if the wrong locale is selected. Run `pnpm seed:home` to load defaults from the repo into the database.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: string;
+  /**
+   * Brand name shown in the header, footer, and logo alt fallback.
+   */
+  siteName: string;
+  /**
+   * Wordmark or logo image. If empty, the header shows text from Site name only.
+   */
+  siteLogo?: (string | null) | Media;
+  /**
+   * Accessibility: “Skip to main content” link text.
+   */
+  skipLinkLabel?: string | null;
+  /**
+   * Top navigation links (label + in-page anchor href).
+   */
+  navItems?:
+    | {
+        label: string;
+        /**
+         * e.g. #variable-lab
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Aria-label for the account icon button.
+   */
+  accountAriaLabel?: string | null;
+  /**
+   * Aria-label for the cart icon button.
+   */
+  cartAriaLabel?: string | null;
+  /**
+   * Full-width hero background. If empty, a neutral gradient placeholder is used (no static asset path).
+   */
+  heroBackground?: (string | null) | Media;
+  /**
+   * Small line above the headline (e.g. lab status).
+   */
+  heroKicker?: string | null;
+  /**
+   * Main headline — first line.
+   */
+  heroTitleLine1?: string | null;
+  /**
+   * Main headline — second line (often styled differently in CSS).
+   */
+  heroTitleLine2?: string | null;
+  /**
+   * Supporting paragraph under the headline.
+   */
+  heroSubtitle?: string | null;
+  /**
+   * First highlighted word in the subtitle (styled as accent).
+   */
+  heroAccentWord1?: string | null;
+  /**
+   * Second highlighted word in the subtitle.
+   */
+  heroAccentWord2?: string | null;
+  heroPrimaryCtaLabel?: string | null;
+  /**
+   * Anchor or URL for primary CTA.
+   */
+  heroPrimaryCtaHref?: string | null;
+  heroSecondaryCtaLabel?: string | null;
+  heroSecondaryCtaHref?: string | null;
+  /**
+   * Eyebrow above the section title.
+   */
+  laboratoryPhase?: string | null;
+  laboratoryTitle?: string | null;
+  laboratoryIntro?: string | null;
+  /**
+   * Message when no products match the filter.
+   */
+  laboratoryEmptyFilter?: string | null;
+  /**
+   * Small label above price (e.g. PRICE / 12OZ).
+   */
+  laboratoryPriceLabel?: string | null;
+  /**
+   * Use {title} where the product title should appear in the aria-label.
+   */
+  laboratoryAddToCartAriaTemplate?: string | null;
+  /**
+   * Filter tabs; id must match product category values.
+   */
+  storeFilters?:
+    | {
+        id: 'all' | 'bestseller' | 'single-origin' | 'espresso-blend' | 'rare-varietal';
+        label: string;
+      }[]
+    | null;
+  storeProducts?:
+    | {
+        /**
+         * Stable id for React keys (e.g. 1, 2, …).
+         */
+        key: string;
+        title: string;
+        description?: string | null;
+        tags?:
+          | {
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        rating: number;
+        reviews: number;
+        /**
+         * Display price e.g. €24,00 or $24.00
+         */
+        price: string;
+        image: string | Media;
+        /**
+         * Which filters this product appears under.
+         */
+        categories: ('bestseller' | 'single-origin' | 'espresso-blend' | 'rare-varietal')[];
+        id?: string | null;
+      }[]
+    | null;
+  labStats?:
+    | {
+        value: string;
+        label: string;
+        icon: 'box' | 'medal' | 'star' | 'trend';
+        id?: string | null;
+      }[]
+    | null;
+  protocolEyebrow?: string | null;
+  protocolTitle?: string | null;
+  brewEspressoLabel?: string | null;
+  brewFilterLabel?: string | null;
+  geneticSection?: {
+    /**
+     * Badge text on the image.
+     */
+    mediaTag?: string | null;
+    phase?: string | null;
+    title?: string | null;
+    body?: string | null;
+    ctaLabel?: string | null;
+    ctaHref?: string | null;
+    image?: (string | null) | Media;
+  };
+  thermalSection?: {
+    mediaTag?: string | null;
+    phase?: string | null;
+    title?: string | null;
+    body?: string | null;
+    ctaLabel?: string | null;
+    ctaHref?: string | null;
+    image?: (string | null) | Media;
+  };
+  valueSection?: {
+    mediaTag?: string | null;
+    phase?: string | null;
+    title?: string | null;
+    body?: string | null;
+    ctaLabel?: string | null;
+    ctaHref?: string | null;
+    image?: (string | null) | Media;
+  };
+  precisionPhase?: string | null;
+  precisionTitle?: string | null;
+  precisionIntro?: string | null;
+  precisionPanelTitle?: string | null;
+  /**
+   * Text before brew mode in status (e.g. STATUS: ACTIVE //).
+   */
+  precisionStatusPrefix?: string | null;
+  axisRoast?: string | null;
+  axisAcidity?: string | null;
+  axisBody?: string | null;
+  axisSweetness?: string | null;
+  axisComplexity?: string | null;
+  matrixHeading?: string | null;
+  matrixTagsEspresso?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  matrixTagsFilter?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  synthesizeButton?: string | null;
+  scanStats?:
+    | {
+        /**
+         * Use {beam} and {water} for dynamic values (espresso vs filter). Line 1 can stay static (e.g. SCAN_UID: X-992).
+         */
+        template: string;
+        id?: string | null;
+      }[]
+    | null;
+  roastSliderLabel?: string | null;
+  radarAriaLabel?: string | null;
+  flavorNote?: string | null;
+  blendingPhase?: string | null;
+  blendingTitle?: string | null;
+  blendingIntro?: string | null;
+  blendingTabExpert?: string | null;
+  blendingTabManual?: string | null;
+  blendingExpertCards?:
+    | {
+        intensityLabel?: string | null;
+        title?: string | null;
+        sensoryFilter?: string | null;
+        sensoryEspresso?: string | null;
+        geneticBase?: string | null;
+        methodologyFilter?: string | null;
+        methodologyEspresso?: string | null;
+        price?: string | null;
+        cta?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  manualAssemblerTitle?: string | null;
+  /**
+   * Shown before brew mode, e.g. PROTOCOL: MANUAL_OVERRIDE //
+   */
+  manualAssemblerProtocolPrefix?: string | null;
+  manualRecalibrate?: string | null;
+  manualRowsEspresso?:
+    | {
+        code?: string | null;
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  manualRowsFilter?:
+    | {
+        code?: string | null;
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  saturationLabel?: string | null;
+  stabilityLabel?: string | null;
+  stabilityLocked?: string | null;
+  stabilityCalibrating?: string | null;
+  finalizeAssembly?: string | null;
+  vaultPhase?: string | null;
+  vaultTitle?: string | null;
+  vaultIntro?: string | null;
+  vaultCuppingLabel?: string | null;
+  /**
+   * e.g. SPECIMEN // 2026
+   */
+  vaultSpecimenYear?: string | null;
+  vaultMetadataLabel?: string | null;
+  vaultMetadataValue?: string | null;
+  vaultCards?:
+    | {
+        score?: string | null;
+        title?: string | null;
+        label?: string | null;
+        description?: string | null;
+        priceButton?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Line under logo (e.g. MOLECULAR ROASTERY // STATION).
+   */
+  footerTagline?: string | null;
+  footerMission?: string | null;
+  footerMapTitle?: string | null;
+  footerMapLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  footerOpsTitle?: string | null;
+  footerOpsLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  footerFeedTitle?: string | null;
+  footerFeedDescription?: string | null;
+  footerFeedPlaceholder?: string | null;
+  footerFeedSubmit?: string | null;
+  footerFeedEncryption?: string | null;
+  footerFeedSuccess?: string | null;
+  /**
+   * © line; use {year} for the current year.
+   */
+  footerCopyright?: string | null;
+  /**
+   * mailto subject for the newsletter signup form.
+   */
+  neuralFeedMailSubject?: string | null;
+  /**
+   * First lines of the mailto body before the user email line.
+   */
+  neuralFeedMailBodyIntro?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  siteName?: T;
+  siteLogo?: T;
+  skipLinkLabel?: T;
+  navItems?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  accountAriaLabel?: T;
+  cartAriaLabel?: T;
+  heroBackground?: T;
+  heroKicker?: T;
+  heroTitleLine1?: T;
+  heroTitleLine2?: T;
+  heroSubtitle?: T;
+  heroAccentWord1?: T;
+  heroAccentWord2?: T;
+  heroPrimaryCtaLabel?: T;
+  heroPrimaryCtaHref?: T;
+  heroSecondaryCtaLabel?: T;
+  heroSecondaryCtaHref?: T;
+  laboratoryPhase?: T;
+  laboratoryTitle?: T;
+  laboratoryIntro?: T;
+  laboratoryEmptyFilter?: T;
+  laboratoryPriceLabel?: T;
+  laboratoryAddToCartAriaTemplate?: T;
+  storeFilters?:
+    | T
+    | {
+        id?: T;
+        label?: T;
+      };
+  storeProducts?:
+    | T
+    | {
+        key?: T;
+        title?: T;
+        description?: T;
+        tags?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        rating?: T;
+        reviews?: T;
+        price?: T;
+        image?: T;
+        categories?: T;
+        id?: T;
+      };
+  labStats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        icon?: T;
+        id?: T;
+      };
+  protocolEyebrow?: T;
+  protocolTitle?: T;
+  brewEspressoLabel?: T;
+  brewFilterLabel?: T;
+  geneticSection?:
+    | T
+    | {
+        mediaTag?: T;
+        phase?: T;
+        title?: T;
+        body?: T;
+        ctaLabel?: T;
+        ctaHref?: T;
+        image?: T;
+      };
+  thermalSection?:
+    | T
+    | {
+        mediaTag?: T;
+        phase?: T;
+        title?: T;
+        body?: T;
+        ctaLabel?: T;
+        ctaHref?: T;
+        image?: T;
+      };
+  valueSection?:
+    | T
+    | {
+        mediaTag?: T;
+        phase?: T;
+        title?: T;
+        body?: T;
+        ctaLabel?: T;
+        ctaHref?: T;
+        image?: T;
+      };
+  precisionPhase?: T;
+  precisionTitle?: T;
+  precisionIntro?: T;
+  precisionPanelTitle?: T;
+  precisionStatusPrefix?: T;
+  axisRoast?: T;
+  axisAcidity?: T;
+  axisBody?: T;
+  axisSweetness?: T;
+  axisComplexity?: T;
+  matrixHeading?: T;
+  matrixTagsEspresso?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  matrixTagsFilter?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  synthesizeButton?: T;
+  scanStats?:
+    | T
+    | {
+        template?: T;
+        id?: T;
+      };
+  roastSliderLabel?: T;
+  radarAriaLabel?: T;
+  flavorNote?: T;
+  blendingPhase?: T;
+  blendingTitle?: T;
+  blendingIntro?: T;
+  blendingTabExpert?: T;
+  blendingTabManual?: T;
+  blendingExpertCards?:
+    | T
+    | {
+        intensityLabel?: T;
+        title?: T;
+        sensoryFilter?: T;
+        sensoryEspresso?: T;
+        geneticBase?: T;
+        methodologyFilter?: T;
+        methodologyEspresso?: T;
+        price?: T;
+        cta?: T;
+        id?: T;
+      };
+  manualAssemblerTitle?: T;
+  manualAssemblerProtocolPrefix?: T;
+  manualRecalibrate?: T;
+  manualRowsEspresso?:
+    | T
+    | {
+        code?: T;
+        name?: T;
+        id?: T;
+      };
+  manualRowsFilter?:
+    | T
+    | {
+        code?: T;
+        name?: T;
+        id?: T;
+      };
+  saturationLabel?: T;
+  stabilityLabel?: T;
+  stabilityLocked?: T;
+  stabilityCalibrating?: T;
+  finalizeAssembly?: T;
+  vaultPhase?: T;
+  vaultTitle?: T;
+  vaultIntro?: T;
+  vaultCuppingLabel?: T;
+  vaultSpecimenYear?: T;
+  vaultMetadataLabel?: T;
+  vaultMetadataValue?: T;
+  vaultCards?:
+    | T
+    | {
+        score?: T;
+        title?: T;
+        label?: T;
+        description?: T;
+        priceButton?: T;
+        id?: T;
+      };
+  footerTagline?: T;
+  footerMission?: T;
+  footerMapTitle?: T;
+  footerMapLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  footerOpsTitle?: T;
+  footerOpsLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  footerFeedTitle?: T;
+  footerFeedDescription?: T;
+  footerFeedPlaceholder?: T;
+  footerFeedSubmit?: T;
+  footerFeedEncryption?: T;
+  footerFeedSuccess?: T;
+  footerCopyright?: T;
+  neuralFeedMailSubject?: T;
+  neuralFeedMailBodyIntro?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

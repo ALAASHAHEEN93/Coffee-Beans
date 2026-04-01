@@ -1,14 +1,13 @@
 import React from 'react'
 import './styles.css'
 
-export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
-  title: 'Payload Blank Template',
-}
-
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
-
+/**
+ * Document shell for the marketing site only. Payload routes use their own layout
+ * and must not inherit a second <html>/<body> from here.
+ * suppressHydrationWarning avoids false hydration errors when browser extensions
+ * inject attributes on <html>/<body> before React hydrates.
+ */
+export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>

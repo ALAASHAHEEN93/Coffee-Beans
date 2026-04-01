@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2017",
     "lib": [
       "dom",
@@ -21,7 +22,11 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@payload-config": ["./src/payload.config.ts"],
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
