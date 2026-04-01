@@ -431,16 +431,16 @@ export default function HomePage() {
               {(
                 brewMode === 'espresso'
                   ? [
-                      ['MOGIANA // SPECIMEN', 'Brazilian Santos', 'originA' as const],
-                      ['MALABAR // SPECIMEN', 'Indian Monsooned', 'originB' as const],
-                      ['LAB SELECT // SPECIMEN', 'Dark Roast Blend', 'roastLab' as const],
+                      ['MOGIANA // SPECIMEN', 'Brazilian Santos', 'originA'],
+                      ['MALABAR // SPECIMEN', 'Indian Monsooned', 'originB'],
+                      ['LAB SELECT // SPECIMEN', 'Dark Roast Blend', 'roastLab'],
                     ]
                   : [
-                      ['GUJI // SPECIMEN', 'Ethiopian Heirloom', 'originA' as const],
-                      ['GEISHA // SPECIMEN', 'Panama Geisha', 'originB' as const],
-                      ['LAB SELECT // SPECIMEN', 'Light Roast Blend', 'roastLab' as const],
+                      ['GUJI // SPECIMEN', 'Ethiopian Heirloom', 'originA'],
+                      ['GEISHA // SPECIMEN', 'Panama Geisha', 'originB'],
+                      ['LAB SELECT // SPECIMEN', 'Light Roast Blend', 'roastLab'],
                     ]
-              ).map(([label, name, key]) => (
+              ).map(([label, name, key]: [string, string, 'originA' | 'originB' | 'roastLab']) => (
                 <div className="blendRow" key={key}>
                   <div className="blendRowLabel">
                     <small>{label}</small>
