@@ -1,0 +1,17 @@
+node_modules/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+.env.save
+
+# Next.js
+.next/
+out/
+
+# TypeScript / tooling
+*.tsbuildinfo
+
+# OS
+.DS_Store
